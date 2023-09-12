@@ -3,6 +3,8 @@ import './GamePage.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaCircleInfo, FaTrophy } from 'react-icons/fa6';
+import $ from 'jquery'; 
+import { wait } from '@testing-library/user-event/dist/utils';
 
 const GamePage = ({ token, onLogout }) => {
     const [topTracks, setTopTracks] = useState([]);
@@ -14,6 +16,7 @@ const GamePage = ({ token, onLogout }) => {
     const [showCheckmark, setShowCheckmark] = useState(false);
     const [showCrossmark, setShowCrossmark] = useState(false);
     const [showInstructions, setShowInstructions] = useState(false);
+    const [currentCount, setCurrentCount] = useState(0);
 
     const pickRandomSongs = () => {
         const randomSongs = topTracks.sort(() => 0.5 - Math.random()).slice(0, 1);
@@ -56,44 +59,49 @@ const GamePage = ({ token, onLogout }) => {
         userTracks();
     }, [token]);
 
-    const handleButtonClick = (choice) => {
+    const handleButtonClick = async (choice) => {
         setChoice(choice);
         setChoiceMade(true);
-
-        if (song1.popularity == song2.popularity) {
-            setScore(score+1);
-            setShowCheckmark(true);
-            setShowCrossmark(false);
-        }
-        if (choice == "higher") {
-            if (song2.popularity > song1.popularity) {
-                setScore(score+1)
-                setShowCheckmark(true);
-                setShowCrossmark(false);
-            } else {
-                setScore(0);
-                setShowCheckmark(false);
-                setShowCrossmark(true);
-            }
-        } else {
-            if (song2.popularity < song1.popularity) {
-                setScore(score+1)
-                setShowCheckmark(true);
-                setShowCrossmark(false);
-            } else {
-                setScore(0);
-                setShowCrossmark(true);
-                setShowCheckmark(false);
-            } 
-        }
+        setCurrentCount(0);
+        
+        await countUp(song2.popularity);
 
         setTimeout(() => {
-            pickRandomSongs();
-            setChoiceMade(false);
-            setShowCheckmark(false);
-            setShowCrossmark(false);
-            setChoice(null);
-        }, 4000);
+            if (song1.popularity == song2.popularity) {
+                setScore(score+1);
+                setShowCheckmark(true);
+                setShowCrossmark(false);
+            }
+            if (choice == "higher") {
+                if (song2.popularity > song1.popularity) {
+                    setScore(score+1)
+                    setShowCheckmark(true);
+                    setShowCrossmark(false);
+                } else {
+                    setScore(0);
+                    setShowCheckmark(false);
+                    setShowCrossmark(true);
+                }
+            } else {
+                if (song2.popularity < song1.popularity) {
+                    setScore(score+1)
+                    setShowCheckmark(true);
+                    setShowCrossmark(false);
+                } else {
+                    setScore(0);
+                    setShowCrossmark(true);
+                    setShowCheckmark(false);
+                } 
+            }
+    
+            setTimeout(() => {
+                pickRandomSongs();
+                setChoiceMade(false);
+                setShowCheckmark(false);
+                setShowCrossmark(false);
+                setChoice(null);
+            }, 4000);
+        }, 1000)
     };
 
     const toggleInstructions = () => {
@@ -103,6 +111,29 @@ const GamePage = ({ token, onLogout }) => {
     const logout = () => {
         onLogout();
     };
+
+    const countUp = (count) => {
+        return new Promise((resolve) => {
+            let run_count = 0;
+            const int_speed = 24;
+        
+            const int = setInterval(() => {
+              if (run_count < count) {
+                run_count++;
+                setCurrentCount(run_count);
+              } else {
+                clearInterval(int);
+                resolve();
+              }
+            }, int_speed);
+          });
+    };
+
+    useEffect(() => {
+        if (choiceMade && song2) {
+            countUp(song2.popularity); // Call countUp function with song2.popularity as the target
+        }
+    }, [choiceMade, song2]); // Dependency array
 
     return (
         <div className="App">
@@ -137,12 +168,13 @@ const GamePage = ({ token, onLogout }) => {
                     <img src={song1.album.images[0].url} alt={song1.name} />
                     <h2>{song1.name}</h2>
                     <p>{song1.artists.map((artist) => artist.name).join(", ")}</p>
-                    <p>Popularity: {song1.popularity}</p>
+                    <div class="count">{song1.popularity}</div>
                   </>
                 ) : (
                   <p>Loading...</p>
                 )}
               </div>
+              <div className="animation-container">
               {showCheckmark && (
                 <div className="c-markicon u-font-normal">
                 <svg viewBox="0 0 192 192">
@@ -158,13 +190,14 @@ const GamePage = ({ token, onLogout }) => {
                         </svg>
                     </div>
                 )}
+                </div>
                 <div className="song-card">
                 {song2 ? (
                   <>
                     <img src={song2.album.images[0].url} alt={song2.name} />
                     <h2>{song2.name}</h2>
                     <p>{song2.artists.map((artist) => artist.name).join(", ")}</p>
-                    {choiceMade && <p>Popularity: {song2.popularity}</p>}
+                    {choiceMade && <div class="count">{currentCount}</div>}
                     {!choiceMade ? (
                       <>
                         <button className="higher-button" onClick={() => handleButtonClick("higher")}>

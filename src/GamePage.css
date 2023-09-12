@@ -119,6 +119,20 @@ body {
 
 }
 
+.count {
+  position: relative;
+  margin: 40px 0;
+  padding: 14px 16px;
+  font-size: 40px;
+  line-height: 40px;
+  font-weight: 600;
+  font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
+  border-radius: 4px;
+  display: inline-block;
+  background: rgba(255,255,255,0.1);
+}
+
 .container {
   flex: 1;
   overflow-y: auto;
@@ -190,10 +204,18 @@ body {
   }
   
   .crossmark1 {
-    animation: crossmark1_animation .8s ease-out forwards;
+    animation: crossmark1_animation .4s ease-out forwards;
   }
   .crossmark2 {
-    animation: crossmark2_animation .8s ease-out forwards;
+    animation: crossmark2_animation .4s ease-out forwards;
+  }
+
+  .animation-container {
+    width: 100px; /* You can adjust this value */
+    height: 100px; /* You can adjust this value */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   
