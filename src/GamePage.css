@@ -5,7 +5,8 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Roboto Mono', monospace;
+  background: linear-gradient(to right, #443646, #2b2437);
+  font-family: 'Roboto', sans-serif;
 }
 
 .App {
@@ -48,6 +49,7 @@ body {
   border: 1px solid #fff;
   border-radius: 10px;
   font-size: 25px;
+  box-shadow: 0px 3px 6px #000;
 }
 
 .song-card {
@@ -61,6 +63,7 @@ body {
   align-items: center;
   text-align: center;
   position: relative;
+  box-shadow: 0px 6px 9px #000;
 }
 
 
@@ -77,10 +80,12 @@ body {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
+  font-weight: bold;
   margin: 4px 2px;
   cursor: pointer;
   transition-duration: 0.2s;
-  border-radius: 12px;
+  border-radius: 5px;
+  box-shadow: 0px 3px 6px #000;
 }
 
 .higher-button {
@@ -92,10 +97,12 @@ body {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
+  font-weight: bold;
   margin: 4px 2px;
   cursor: pointer;
   transition-duration: 0.2s;
-  border-radius: 12px;
+  border-radius: 5px;
+  box-shadow: 0px 3px 6px #000;
 }
 
 .lower-button:hover {
@@ -109,7 +116,8 @@ body {
   background-color: rgb(4, 100, 7);
   color: white;
   border: 2px solid #4CAF50;
-  border-radius: 12px;
+  border-radius: 5px;
+
 }
 
 .container {
@@ -120,16 +128,18 @@ body {
 }
 
 .logout-button {
-  background-color: #454847;
+  background-color: #83748c;
   border: none;
   color: white;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
   position: absolute;
-  padding: 8px;
+  padding: 10px 20px;
   top: 20px;
   right: 20px;
-  border-radius: 12px;
+  border-radius: 5px;
+  box-shadow: 0px 3px 6px #000;
 }
 
   .u-font-normal {
@@ -235,7 +245,7 @@ body {
     margin-left: 10px;
     position: absolute;
     top: 24px;
-    right: 120px;
+    right: 140px;
   }
   
   .popup-window {
@@ -266,9 +276,23 @@ body {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    font-weight: bold;
     margin-top: 10px;
     cursor: pointer;
     border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
+  }
+
+  .leaderboard-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+    position: absolute;
+    top: 24px;
+    right: 190px;
   }
   
 
