@@ -1,6 +1,19 @@
-# Getting Started with Create React App
+# Spotify Popularity Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About
+
+The Spotify Song Game is a personalized challenge where you guess which songs in your personal catalog are higher or lower in popularity.
+
+The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.
+
+Test your knowledge of popular songs and see how high you can score!
+
+This project uses the React.js framework as well as the public Spotify API to fetch relevant personalized tracklist, and song data provided by Spotify.
+
+OAuth2 authentication with Flask allows users to log in using their Spotify credentials and accesses their personal streaming information
+
+Data stored in MySQL server and schema, including global top scores to keep relevant leader board information
+
 
 ## Available Scripts
 
@@ -39,31 +52,6 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
 ### `npm run build` fails to minify
 
