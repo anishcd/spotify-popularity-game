@@ -16,6 +16,7 @@ const GamePage = ({ token, onLogout }) => {
     const [showCheckmark, setShowCheckmark] = useState(false);
     const [showCrossmark, setShowCrossmark] = useState(false);
     const [showInstructions, setShowInstructions] = useState(false);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [currentCount, setCurrentCount] = useState(0);
 
     const pickRandomSongs = () => {
@@ -106,7 +107,11 @@ const GamePage = ({ token, onLogout }) => {
 
     const toggleInstructions = () => {
         setShowInstructions(!showInstructions);
-      };
+    };
+
+    const toggleLeaderboard = () => {
+        setShowLeaderboard(!showLeaderboard);
+    }
 
     const logout = () => {
         onLogout();
@@ -151,10 +156,10 @@ const GamePage = ({ token, onLogout }) => {
             ) : (
             <>
               <button className="logout-button" onClick={logout}>Logout</button>
-              <button className="popup-button" onClick={toggleInstructions}>
+              <button className="info-button" onClick={toggleInstructions}>
                 <FaCircleInfo className="social-icon" />
               </button>
-              <button className="leaderboard-button" onClick={toggleInstructions}>
+              <button className="leaderboard-button" onClick={toggleLeaderboard}>
                 <FaTrophy className="social-icon" />
               </button>
             </>
@@ -216,16 +221,29 @@ const GamePage = ({ token, onLogout }) => {
             </div>
           </div>
           {showInstructions && (
-        <div className="popup-window">
-          <div className="popup-content">
-            <h3>Instructions:</h3>
-            <p>Guess whether the next song is higher or lower in popularity compared to the current song.</p>
-            <button className="close-button" onClick={toggleInstructions}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+            <div className="info-window">
+            <div className="info-popup-content">
+                <b>How do I play?</b>
+                <p>Guess which song is higher or lower in popularity from your personal favorite songs and tracks from Spotify!</p>
+                <b>What does the number below the song mean?</b>
+                <p>The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the <b>total number of plays</b> the track has had and how <b>recent</b> those plays are.</p>
+                <button className="info-close-button" onClick={toggleInstructions}>
+                Close
+                </button>
+            </div>
+            </div>
+            )}
+            {showLeaderboard && (
+                <div className="leaderboard-window">
+                <div className="leaderboard-popup-content">
+                    <h3>Leaderboard:</h3>
+                    <p>Guess whether the next song is higher or lower in popularity compared to the current song.</p>
+                    <button className="leaderboard-close-button" onClick={toggleLeaderboard}>
+                    Close
+                    </button>
+                </div>
+                </div>
+            )}
         </div>
       );
     };

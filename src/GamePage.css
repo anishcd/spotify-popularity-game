@@ -273,7 +273,7 @@ body {
     align-items: center;
   }
   
-  .popup-button {
+  .info-button {
     background-color: transparent;
     border: none;
     color: white;
@@ -285,7 +285,7 @@ body {
     right: 140px;
   }
   
-  .popup-window {
+  .info-window {
     position: fixed;
     top: 0;
     left: 0;
@@ -298,13 +298,14 @@ body {
     color:#443646;
   }
   
-  .popup-content {
+  .info-popup-content {
     background-color: #fff;
-    padding: 20px;
+    padding: 40px;
+    width: 60%;
     border-radius: 10px;
   }
   
-  .close-button {
+  .info-close-button {
     background-color: #ab3333;
     border: none;
     color: white;
@@ -330,6 +331,41 @@ body {
     position: absolute;
     top: 24px;
     right: 190px;
+  }
+
+  .leaderboard-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color:#443646;
+  }
+  
+  .leaderboard-popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .leaderboard-close-button {
+    background-color: #ab3333;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
   }
   
 
