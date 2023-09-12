@@ -10,7 +10,7 @@
   }
   
   .title {
-    font-size: 32px;
+    font-size: 40px;
     margin-bottom: 30px;
     animation: fadeInUp 1s ease;
     text-shadow: 2px 2px 4px #000000;
@@ -21,7 +21,7 @@
     color: white;
     padding: 10px 20px;
     border: none;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
@@ -50,6 +50,7 @@
   }
   
   .instructions, .about-section {
+    font-size: 20px;
     text-align: center;
   }
   
