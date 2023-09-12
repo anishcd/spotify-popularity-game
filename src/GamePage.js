@@ -140,7 +140,7 @@ const GamePage = ({ token, onLogout }) => {
           <header className="App-header">
             <h1 className="game-title">Higher or Lower: Songs Edition</h1>
             <div className="score-card">
-              <div className="score">Score: {score}</div>
+              <div className="score">Score:<div class="score-count">{score}</div></div>
             </div>
             {!token ? (
               <a

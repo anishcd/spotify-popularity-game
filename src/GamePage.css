@@ -131,7 +131,23 @@ body {
   border-radius: 4px;
   display: inline-block;
   background: rgba(255,255,255,0.1);
+  box-shadow: 0px 1px 2px #000;
 }
+
+.score-count {
+    position: relative;
+    margin: 10px 15px;
+    padding: 8px 16px;
+    font-size: 40px;
+    line-height: 40px;
+    font-weight: 600;
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    border-radius: 4px;
+    display: inline-block;
+    background: rgba(174, 156, 156, 0.1);
+    box-shadow: 0px 1px 2px #000;
+  }
 
 .container {
   flex: 1;
