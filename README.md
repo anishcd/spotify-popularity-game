@@ -1,6 +1,13 @@
-# Getting Started with Create React App
+# Spotify Popularity Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About
+
+The Spotify Song Game is a personalized challenge where you guess which songs in your personal catalog are higher or lower in popularity.
+
+The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.
+
+Test your knowledge of popular songs and see how high you can score!
+
 
 ## Available Scripts
 
