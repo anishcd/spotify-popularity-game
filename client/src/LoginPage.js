@@ -2,7 +2,6 @@ import React from 'react';
 import './LoginPage.css';
 import headshot from '../src/img/about-me.jpg';
 import { FaGithub, FaSpotify, FaTwitter, FaLinkedin, FaRegAddressCard } from 'react-icons/fa';
-import Slider from "react-slick";
 
 const LoginPage = () => {
   const CLIENT_ID = "7bedd495cf6a43b49f1655cbbc2be4c4";

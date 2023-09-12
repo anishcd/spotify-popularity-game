@@ -237,7 +237,7 @@ const GamePage = ({ token, onLogout }) => {
                 <div className="leaderboard-window">
                 <div className="leaderboard-popup-content">
                     <h3>Leaderboard:</h3>
-                    <p>Guess whether the next song is higher or lower in popularity compared to the current song.</p>
+                    <p>Guess whether the next song is higher or lower in popularity compared to the current song. Leaders</p>
                     <button className="leaderboard-close-button" onClick={toggleLeaderboard}>
                     Close
                     </button>
