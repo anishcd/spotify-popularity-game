@@ -12,7 +12,7 @@ This project uses the React.js framework as well as the public Spotify API to fe
 
 OAuth2 authentication with Flask allows users to log in using their Spotify credentials and accesses their personal streaming information
 
-Data stored in MySQL server and schema, including global top scores to keep relevant leader board information
+Data stored in MongoDB server and schema, including global top scores to keep relevant leader board information, as well as current player's game statistics and music preferences
 
 
 ## Available Scripts
