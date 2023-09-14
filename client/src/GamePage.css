@@ -126,7 +126,6 @@ body {
   font-size: 40px;
   line-height: 40px;
   font-weight: 600;
-  font-smoothing: antialiased;
   -webkit-font-smoothing: antialiased;
   border-radius: 4px;
   display: inline-block;
@@ -141,7 +140,6 @@ body {
     font-size: 40px;
     line-height: 40px;
     font-weight: 600;
-    font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
     border-radius: 4px;
     display: inline-block;
