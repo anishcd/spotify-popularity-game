@@ -15,6 +15,10 @@ OAuth2 authentication with Flask allows users to log in using their Spotify cred
 Data stored in MongoDB server and schema, including global top scores to keep relevant leader board information, as well as current player's game statistics and music preferences
 
 
+![login-page](img/login_page.png)
+
+
+![game-page](img/game_pic.png)
 ## Available Scripts
 
 In the project directory, you can run:
