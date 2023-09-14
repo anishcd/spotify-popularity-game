@@ -5,19 +5,30 @@ import axios from 'axios';
 import { FaCircleInfo, FaTrophy } from 'react-icons/fa6';
 import $ from 'jquery'; 
 import { wait } from '@testing-library/user-event/dist/utils';
+import { countryCode } from 'emoji-flags';
 
 const GamePage = ({ token, onLogout }) => {
+    const [userId, setUserId] = useState(null);
     const [topTracks, setTopTracks] = useState([]);
     const [song1, setSong1] = useState(null);
     const [song2, setSong2] = useState(null);
     const [score, setScore] = useState(0);
     const [choiceMade, setChoiceMade] = useState(false);
+    const [highScore, setHighScore] = useState(null);
     const [choice, setChoice] = useState(null);
     const [showCheckmark, setShowCheckmark] = useState(false);
     const [showCrossmark, setShowCrossmark] = useState(false);
     const [showInstructions, setShowInstructions] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [currentCount, setCurrentCount] = useState(0);
+    const [activeTab, setActiveTab] = useState('personal');
+    const [gamesPlayed, setGamesPlayed] = useState(null);
+    const [country, setCountry] = useState(null);
+    const [globalScope, setGlobalScope] = useState(false);
+    const [profilePic, setProfilePic] = useState(null);
+    const [displayName, setDisplayName] = useState(null);
+
+
 
     const pickRandomSongs = () => {
         const randomSongs = topTracks.sort(() => 0.5 - Math.random()).slice(0, 1);
@@ -56,9 +67,66 @@ const GamePage = ({ token, onLogout }) => {
                 }
             }
         };
-
-        userTracks();
+        const init = async () => {
+            await getUser(); // Ensure userId is fetched first
+            userTracks(); // Then fetch the user's tracks
+        };
+    
+        init();
     }, [token]);
+
+    useEffect(() => {
+        if (userId) {
+            axios.get(`http://localhost:3001/checkUsername/${userId}`)
+                .then(response => {
+                    if (response.data.exists) {
+                        // Call getHighscore only if the username exists
+                        getHighscore(userId);
+                    } else {
+                        fetch("http://localhost:3001/createUser", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ username: userId })
+                        })
+                        .then(response => response.json()) // Assuming server responds with json
+                        .then(data => {
+                            console.log("User creation response:", data);
+                            if (data) {
+                                getHighscore(userId);
+                            } else {
+                                console.log("User not created. Not fetching high score.");
+                            }
+                        })
+                        .catch(error => {
+                            console.log("Error in user creation:", error);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('There was an error checking if the user exists:', error);
+                });
+        }
+    }, [userId]);
+
+    const getUser = async() => {
+        if (token) {
+            try {
+                const { data } = await axios.get("https://api.spotify.com/v1/me", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+                });
+                setUserId(data.id);
+                setCountry(data.country);
+                setProfilePic(data.images[0].url);
+                setDisplayName(data.display_name);
+            } catch (error) {
+                console.error("Failed to fetch user's Id ", error);
+            }
+        } 
+    } 
 
     const handleButtonClick = async (choice) => {
         setChoice(choice);
@@ -68,33 +136,23 @@ const GamePage = ({ token, onLogout }) => {
         await countUp(song2.popularity);
 
         setTimeout(() => {
-            if (song1.popularity == song2.popularity) {
+            if (song1.popularity == song2.popularity || (choice == "higher" && song2.popularity > song1.popularity) || (choice == "lower" && song2.popularity < song1.popularity)) {
                 setScore(score+1);
+                if ((score + 1) > highScore && userId){  // +1 because you're about to increment the score
+                    updateHighscore(userId, score + 1).then(() => {
+                        getHighscore(userId); // Get updated high score from database
+                      });
+                }
                 setShowCheckmark(true);
                 setShowCrossmark(false);
-            }
-            if (choice == "higher") {
-                if (song2.popularity > song1.popularity) {
-                    setScore(score+1)
-                    setShowCheckmark(true);
-                    setShowCrossmark(false);
-                } else {
-                    setScore(0);
-                    setShowCheckmark(false);
-                    setShowCrossmark(true);
-                }
             } else {
-                if (song2.popularity < song1.popularity) {
-                    setScore(score+1)
-                    setShowCheckmark(true);
-                    setShowCrossmark(false);
-                } else {
-                    setScore(0);
-                    setShowCrossmark(true);
-                    setShowCheckmark(false);
-                } 
+                setScore(0);
+                incrementGamesPlayed(userId).then(() => {
+                    getHighscore(userId); // Get updated high score from database
+                  });
+                setShowCheckmark(false);
+                setShowCrossmark(true); 
             }
-    
             setTimeout(() => {
                 pickRandomSongs();
                 setChoiceMade(false);
@@ -117,6 +175,40 @@ const GamePage = ({ token, onLogout }) => {
         onLogout();
     };
 
+    const updateHighscore = async (username, highscore) => {
+        try{
+        await axios.post("http://localhost:3001/updateHighscore", {
+          username,
+          highscore,
+        });
+        } catch (error) {
+            console.error(`Failed to update high score: ${error}`);
+        }
+      };
+
+      const incrementGamesPlayed = async (username) => {
+        try{
+        await axios.post("http://localhost:3001/incrementGamesPlayed", {
+          username
+        });
+        } catch (error) {
+            console.error(`Failed to update high score: ${error}`);
+        }
+      };
+      
+      
+    const getHighscore = async (username) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/getUserByUsername/${username}`);
+            console.log(response);
+            setHighScore(response.data.highscore); // assuming setHighScore is the setter of a state variable
+            setGamesPlayed(response.data.gamesPlayed);
+            setGlobalScope(response.data.global);
+          } catch (error) {
+            console.error(`Failed to fetch high score: ${error}`);
+          }
+    };
+
     const countUp = (count) => {
         return new Promise((resolve) => {
             let run_count = 0;
@@ -134,6 +226,18 @@ const GamePage = ({ token, onLogout }) => {
           });
     };
 
+    function getFlagEmoji(countryCode) {
+        const codePoints = countryCode
+          .toUpperCase()
+          .split('')
+          .map(char =>  127397 + char.charCodeAt());
+        return String.fromCodePoint(...codePoints);
+      }
+
+    const switchLeaderboard = (type) => {
+        setActiveTab(type);
+      };
+
     useEffect(() => {
         if (choiceMade && song2) {
             countUp(song2.popularity); // Call countUp function with song2.popularity as the target
@@ -145,7 +249,7 @@ const GamePage = ({ token, onLogout }) => {
           <header className="App-header">
             <h1 className="game-title">Higher or Lower: Songs Edition</h1>
             <div className="score-card">
-              <div className="score">Score:<div class="score-count">{score}</div></div>
+              <div className="score">Score:<div className="score-count">{score}</div></div>
             </div>
             {!token ? (
               <a
@@ -173,7 +277,7 @@ const GamePage = ({ token, onLogout }) => {
                     <img src={song1.album.images[0].url} alt={song1.name} />
                     <h2>{song1.name}</h2>
                     <p>{song1.artists.map((artist) => artist.name).join(", ")}</p>
-                    <div class="count">{song1.popularity}</div>
+                    <div className="count">{song1.popularity}</div>
                   </>
                 ) : (
                   <p>Loading...</p>
@@ -190,8 +294,8 @@ const GamePage = ({ token, onLogout }) => {
                 {showCrossmark && (
                     <div className="c-markicon u-font-normal">
                         <svg viewBox="0 0 192 192">
-                            <path class="crossmark1" d="M30,30L162,162"/>
-                            <path class="crossmark2" d="M30,162L162,30"/>
+                            <path className="crossmark1" d="M30,30L162,162"/>
+                            <path className="crossmark2" d="M30,162L162,30"/>
                         </svg>
                     </div>
                 )}
@@ -202,7 +306,7 @@ const GamePage = ({ token, onLogout }) => {
                     <img src={song2.album.images[0].url} alt={song2.name} />
                     <h2>{song2.name}</h2>
                     <p>{song2.artists.map((artist) => artist.name).join(", ")}</p>
-                    {choiceMade && <div class="count">{currentCount}</div>}
+                    {choiceMade && <div className="count">{currentCount}</div>}
                     {!choiceMade ? (
                       <>
                         <button className="higher-button" onClick={() => handleButtonClick("higher")}>
@@ -236,13 +340,66 @@ const GamePage = ({ token, onLogout }) => {
             {showLeaderboard && (
                 <div className="leaderboard-window">
                 <div className="leaderboard-popup-content">
-                    <h3>Leaderboard:</h3>
-                    <p>Guess whether the next song is higher or lower in popularity compared to the current song. Leaders</p>
-                    <button className="leaderboard-close-button" onClick={toggleLeaderboard}>
-                    Close
+                <div className="button-container">
+                    <button
+                    className={`tab-button ${activeTab === 'personal' ? 'active' : ''}`}
+                    onClick={() => switchLeaderboard('personal')}
+                    >
+                    My Highscores
+                    </button>
+                    <button
+                    className={`tab-button ${activeTab === 'global' ? 'active' : ''}`}
+                    onClick={() => switchLeaderboard('global')}
+                    >
+                    Global
                     </button>
                 </div>
+
+                {activeTab === 'global' ? (
+                    <div id="globalLeaderboard">
+                        <h2>Leaderboard</h2>
+                        <div className="leaderboard">
+                            <div className="player">
+                            <img src="profile1.jpg" alt="Player 1" className="profile-pic"/>
+                            <span className="player-name">Player 1</span>
+                            <span className="player-score">100</span>
+                            </div>
+                            <div className="player">
+                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                            <span className="player-name">Player 2</span>
+                            <span className="player-score">90</span>
+                            </div>
+                            <div className="player">
+                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                            <span className="player-name">Player 2</span>
+                            <span className="player-score">90</span>
+                            </div>
+                            <div className="player">
+                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                            <span className="player-name">Player 2</span>
+                            <span className="player-score">90</span>
+                            </div>
+                            <div className="player">
+                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                            <span className="player-name">Player 2</span>
+                            <span className="player-score">90</span>
+                            </div>
+                        </div>
+                    </div>
+                    ) : (
+                        <div id="myHighscores" className="highscores-container">
+                        <div className="user-info">
+                            <img src={profilePic} alt="Profile" className="self-profile-pic" />
+                            <span className="country-flag">{/* Your flag emoji or icon will go here */}</span>
+                        </div>
+                        <h1>{displayName}</h1>
+                        <h2>Your Highscore: <span className="highscore">{highScore}</span></h2>
+                        <h2>Games Played: <span className="games-played">{gamesPlayed}</span></h2>
+                    </div>
+                )}
+                  <button className="leaderboard-close-button" onClick={toggleLeaderboard}>Close</button>
                 </div>
+              </div>
             )}
         </div>
       );
