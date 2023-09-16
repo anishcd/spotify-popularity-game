@@ -27,6 +27,9 @@ const GamePage = ({ token, onLogout }) => {
     const [globalScope, setGlobalScope] = useState(false);
     const [profilePic, setProfilePic] = useState(null);
     const [displayName, setDisplayName] = useState(null);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [isFadingIn, setIsFadingIn] = useState(false);
+
 
 
 
@@ -34,6 +37,11 @@ const GamePage = ({ token, onLogout }) => {
         const randomSongs = topTracks.sort(() => 0.5 - Math.random()).slice(0, 1);
         setSong1(song2);
         setSong2(randomSongs[0]);
+        setIsFadingIn(true);  // Trigger fade-in for song2
+
+        setTimeout(() => {
+            setIsFadingIn(false);  // Reset fade-in state after animation is done
+        }, 2000);  // 2000 ms or however long your fade-in animation takes
     };
 
     useEffect(() => {
@@ -134,34 +142,45 @@ const GamePage = ({ token, onLogout }) => {
         setCurrentCount(0);
         
         await countUp(song2.popularity);
-
+      
         setTimeout(() => {
-            if (song1.popularity == song2.popularity || (choice == "higher" && song2.popularity > song1.popularity) || (choice == "lower" && song2.popularity < song1.popularity)) {
-                setScore(score+1);
-                if ((score + 1) > highScore && userId){  // +1 because you're about to increment the score
+            if (song1.popularity === song2.popularity || (choice === "higher" && song2.popularity > song1.popularity) || (choice === "lower" && song2.popularity < song1.popularity)) {
+                setScore(score + 1);
+                if ((score + 1) > highScore && userId) {
                     updateHighscore(userId, score + 1).then(() => {
-                        getHighscore(userId); // Get updated high score from database
-                      });
+                        getHighscore(userId);
+                    });
                 }
                 setShowCheckmark(true);
                 setShowCrossmark(false);
             } else {
                 setScore(0);
                 incrementGamesPlayed(userId).then(() => {
-                    getHighscore(userId); // Get updated high score from database
-                  });
+                    getHighscore(userId);
+                });
                 setShowCheckmark(false);
-                setShowCrossmark(true); 
+                setShowCrossmark(true);
             }
+      
+            // Start Slide Animation after 1 second
             setTimeout(() => {
+              setIsAnimating(true);
+
+              setShowCheckmark(false);
+                setShowCrossmark(false);
+      
+              // End Slide Animation and proceed to the next card after another second
+              setTimeout(() => {
+                setIsAnimating(false);
                 pickRandomSongs();
                 setChoiceMade(false);
-                setShowCheckmark(false);
-                setShowCrossmark(false);
                 setChoice(null);
-            }, 4000);
-        }, 1000)
-    };
+              }, 2000);  // Time taken for slide animation, can be adjusted
+      
+            }, 2000);  // Time taken for checkmark/crossmark animation
+      
+        }, 1000);  // Time taken for counting up the popularity
+      };
 
     const toggleInstructions = () => {
         setShowInstructions(!showInstructions);
@@ -271,7 +290,7 @@ const GamePage = ({ token, onLogout }) => {
           </header>
           <div className="container">
             <div className="game-container">
-              <div className="song-card">
+              <div className={`song-card ${isAnimating ? 'fade-out' : ''}`}>
                 {song1 ? (
                   <>
                     <img src={song1.album.images[0].url} alt={song1.name} />
@@ -287,20 +306,20 @@ const GamePage = ({ token, onLogout }) => {
               {showCheckmark && (
                 <div className="c-markicon u-font-normal">
                 <svg viewBox="0 0 192 192">
-                    <path className="checkmark" d="M30,102L70,142L162,50"/>
+                    <path className={`checkmark ${isAnimating ? 'lower-z-index' : ''}`} d="M30,102L70,142L162,50"/>
                 </svg>
                 </div>
                 )}
                 {showCrossmark && (
                     <div className="c-markicon u-font-normal">
                         <svg viewBox="0 0 192 192">
-                            <path className="crossmark1" d="M30,30L162,162"/>
-                            <path className="crossmark2" d="M30,162L162,30"/>
+                            <path className={`crossmark1 ${isAnimating ? 'lower-z-index' : ''}`} d="M30,30L162,162"/>
+                            <path className={`crossmark2 ${isAnimating ? 'lower-z-index' : ''}`} d="M30,162L162,30"/>
                         </svg>
                     </div>
                 )}
                 </div>
-                <div className="song-card">
+                <div className={`song-card ${isAnimating ? 'slide-in' : ''} ${isFadingIn ? 'fade-in' : ''}`}>
                 {song2 ? (
                   <>
                     <img src={song2.album.images[0].url} alt={song2.name} />
@@ -390,7 +409,7 @@ const GamePage = ({ token, onLogout }) => {
                         <div id="myHighscores" className="highscores-container">
                         <div className="user-info">
                             <img src={profilePic} alt="Profile" className="self-profile-pic" />
-                            <span className="country-flag">{/* Your flag emoji or icon will go here */}</span>
+                            <span className="country-flag">{/* flag emoji or icon will go here */}</span>
                         </div>
                         <h1>{displayName}</h1>
                         <h2>Your Highscore: <span className="highscore">{highScore}</span></h2>
