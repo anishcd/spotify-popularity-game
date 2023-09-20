@@ -15,11 +15,13 @@ const GamePage = ({ token, onLogout }) => {
     const [score, setScore] = useState(0);
     const [choiceMade, setChoiceMade] = useState(false);
     const [highScore, setHighScore] = useState(null);
+    const [isNewHighScore, setIsNewHighScore] = useState(false);
     const [choice, setChoice] = useState(null);
     const [showCheckmark, setShowCheckmark] = useState(false);
     const [showCrossmark, setShowCrossmark] = useState(false);
     const [showInstructions, setShowInstructions] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [showLossPopup, setShowLossPopup] = useState(false);
     const [currentCount, setCurrentCount] = useState(0);
     const [activeTab, setActiveTab] = useState('personal');
     const [gamesPlayed, setGamesPlayed] = useState(null);
@@ -136,38 +138,32 @@ const GamePage = ({ token, onLogout }) => {
         } 
     } 
 
-    const handleButtonClick = async (choice) => {
+    const handleGuessMade = async (choice) => {
         setChoice(choice);
         setChoiceMade(true);
         setCurrentCount(0);
-        
+      
         await countUp(song2.popularity);
       
         setTimeout(() => {
-            if (song1.popularity === song2.popularity || (choice === "higher" && song2.popularity > song1.popularity) || (choice === "lower" && song2.popularity < song1.popularity)) {
-                setScore(score + 1);
-                if ((score + 1) > highScore && userId) {
-                    updateHighscore(userId, score + 1).then(() => {
-                        getHighscore(userId);
-                    });
-                }
-                setShowCheckmark(true);
-                setShowCrossmark(false);
-            } else {
-                setScore(0);
-                incrementGamesPlayed(userId).then(() => {
-                    getHighscore(userId);
-                });
-                setShowCheckmark(false);
-                setShowCrossmark(true);
+          if (song1.popularity === song2.popularity || (choice === "higher" && song2.popularity > song1.popularity) || (choice === "lower" && song2.popularity < song1.popularity)) {
+            // Correct guess
+            setScore(score + 1);
+            if ((score + 1) > highScore && userId) {
+              updateHighscore(userId, score + 1).then(() => {
+                getHighscore(userId);
+              });
+              setIsNewHighScore(true);
             }
+            setShowCheckmark(true);
+            setShowCrossmark(false);
       
             // Start Slide Animation after 1 second
             setTimeout(() => {
               setIsAnimating(true);
-
+      
               setShowCheckmark(false);
-                setShowCrossmark(false);
+              setShowCrossmark(false);
       
               // End Slide Animation and proceed to the next card after another second
               setTimeout(() => {
@@ -176,11 +172,42 @@ const GamePage = ({ token, onLogout }) => {
                 setChoiceMade(false);
                 setChoice(null);
               }, 2000);  // Time taken for slide animation, can be adjusted
-      
             }, 2000);  // Time taken for checkmark/crossmark animation
       
-        }, 1000);  // Time taken for counting up the popularity
+          } else {
+            setShowCheckmark(false);
+            setShowCrossmark(true);
+      
+            // Show the popup after crossmark animation
+            setTimeout(() => {
+              setShowLossPopup(true);
+              setShowCrossmark(false);  // Hide the crossmark
+            }, 2000);  // 2 seconds for crossmark animation
+          }
+        }, 1000);  // 1 second for counting up the popularity
       };
+      
+
+      const handlePlayAgain = () => {
+        setShowLossPopup(false); // Hide the popup
+        setScore(0);
+        // Start Slide Animation
+        setIsAnimating(true);
+
+        incrementGamesPlayed(userId).then(() => {
+            getHighscore(userId);
+          });
+      
+        // End Slide Animation and proceed to the next card
+        setTimeout(() => {
+          setIsAnimating(false);
+          pickRandomSongs();
+          setChoiceMade(false);
+          setChoice(null);
+          setIsNewHighScore(false);
+        }, 2000);  // Time taken for slide animation
+      };
+      
 
     const toggleInstructions = () => {
         setShowInstructions(!showInstructions);
@@ -188,6 +215,10 @@ const GamePage = ({ token, onLogout }) => {
 
     const toggleLeaderboard = () => {
         setShowLeaderboard(!showLeaderboard);
+    }
+
+    const toggleShareGlobal = () => {
+        setGlobalScope(!globalScope);
     }
 
     const logout = () => {
@@ -328,10 +359,10 @@ const GamePage = ({ token, onLogout }) => {
                     {choiceMade && <div className="count">{currentCount}</div>}
                     {!choiceMade ? (
                       <>
-                        <button className="higher-button" onClick={() => handleButtonClick("higher")}>
+                        <button className="higher-button" onClick={() => handleGuessMade("higher")}>
                           Higher
                         </button>
-                        <button className="lower-button" onClick={() => handleButtonClick("lower")}>
+                        <button className="lower-button" onClick={() => handleGuessMade("lower")}>
                           Lower
                         </button>
                       </>
@@ -346,9 +377,9 @@ const GamePage = ({ token, onLogout }) => {
           {showInstructions && (
             <div className="info-window">
             <div className="info-popup-content">
-                <b>How do I play?</b>
+                <b><ins>How do I play?</ins></b>
                 <p>Guess which song is higher or lower in popularity from your personal favorite songs and tracks from Spotify!</p>
-                <b>What does the number below the song mean?</b>
+                <b><ins>What does the number below the song mean?</ins></b>
                 <p>The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the <b>total number of plays</b> the track has had and how <b>recent</b> those plays are.</p>
                 <button className="info-close-button" onClick={toggleInstructions}>
                 Close
@@ -356,6 +387,89 @@ const GamePage = ({ token, onLogout }) => {
             </div>
             </div>
             )}
+            {showLossPopup && (
+    <div className="loss-window">
+        <div className={`loss-popup-content ${isNewHighScore ? 'new-high-score' : ''}`}>
+            <div className="button-container">
+                <button
+                    className={`tab-button ${activeTab === 'personal' ? 'active' : ''}`}
+                    onClick={() => switchLeaderboard('personal')}
+                >
+                    Game Recap
+                </button>
+                <button
+                    className={`tab-button ${activeTab === 'global' ? 'active' : ''}`}
+                    onClick={() => switchLeaderboard('global')}
+                >
+                    Global Leaderboard
+                </button>
+            </div>
+
+            {activeTab === 'global' ? (
+                <div id="globalLeaderboard">
+                <h2>Leaderboard</h2>
+                <div className="leaderboard">
+                    <div className="player">
+                    <img src="profile1.jpg" alt="Player 1" className="profile-pic"/>
+                    <span className="player-name">Player 1</span>
+                    <span className="player-score">100</span>
+                    </div>
+                    <div className="player">
+                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                    <span className="player-name">Player 2</span>
+                    <span className="player-score">90</span>
+                    </div>
+                    <div className="player">
+                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                    <span className="player-name">Player 2</span>
+                    <span className="player-score">90</span>
+                    </div>
+                    <div className="player">
+                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                    <span className="player-name">Player 2</span>
+                    <span className="player-score">90</span>
+                    </div>
+                    <div className="player">
+                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
+                    <span className="player-name">Player 2</span>
+                    <span className="player-score">90</span>
+                    </div>
+                </div>
+            </div>
+            ) : (
+                <>
+                    {isNewHighScore ? (
+                        <>
+                            <h2>New High Score!</h2>
+                            <div className="loss-count">{score}</div>
+                            {!globalScope ? (
+                            <button className="share-highscore-global-button" onClick={toggleShareGlobal}>
+                                Share your highscore to our global leaderboard?
+                            </button>
+                            ) : (
+                            <>
+                                <h2>Highscore Shared!</h2>
+                                <button className="unshare-highscore-global-button" onClick={toggleShareGlobal}>
+                                Unshare
+                                </button>
+                            </>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <h2>You have lost!</h2>
+                            <h2>Score: <div className="loss-count">{score}</div></h2>
+                            <h2>Your High Score: <div className="loss-count">{highScore}</div></h2>
+                        </>
+                    )}
+                </>
+            )}
+            <button className="play-again-button" onClick={handlePlayAgain}>Play Again</button>
+            <button className="loss-logout-button" onClick={logout}>Logout</button>
+        </div>
+    </div>
+)}
+
             {showLeaderboard && (
                 <div className="leaderboard-window">
                 <div className="leaderboard-popup-content">

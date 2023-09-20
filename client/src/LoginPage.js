@@ -35,7 +35,7 @@ const LoginPage = () => {
           The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.
           </p>
           <p>
-          Test your knowledge of popular songs and see how high you can score!
+          Test your knowledge of your favorite songs and see how high you can score!
           </p>
           <button className="login-button" onClick={() => (window.location = loginUrl)}>
               Start

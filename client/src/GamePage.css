@@ -319,6 +319,128 @@ body {
     box-shadow: 0px 3px 6px #000;
   }
 
+/* Loss Popup */
+.loss-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(68, 54, 70, 0.8); /* This will be a semi-transparent overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .loss-popup-content {
+    background: linear-gradient(to right, #5d3e61, #4c3e62); /* Adding gradient background similar to your main theme */
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 6px 9px #000;
+    width: 80%;
+    max-width: 400px;
+    color: white;
+  }
+  
+  .loss-popup-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+  
+  .play-again-button {
+    padding: 15px 32px;
+    border: none;
+    background-color: #1db954; /* same color as your logout button */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+    border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
+  }
+
+  .play-again-button:hover {
+    background-color: #1ed760;
+  }
+
+  .loss-logout-button {
+    padding: 15px 32px;
+    border: none;
+    background-color: #ab3333; /* same color as your logout button */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+    border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
+  }
+
+  .loss-logout-button:hover{
+    background-color: #c63f3f;
+  }
+  
+  .loss-popup-content.new-high-score {
+    background: linear-gradient(to right, #5d3e61, #4c3e62);
+  }
+  
+  .loss-popup-content.new-high-score h2 {
+    color: white;
+  }
+
+  .loss-count{
+    position: relative;
+    margin: 8px 0 45px;
+    padding: 14px 16px;
+    font-size: 40px;
+    line-height: 40px;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+    border-radius: 4px;
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0px 1px 2px #000;
+  }
+  
+  .share-highscore-global-button {
+    padding: 15px 32px;
+    border: none;
+    background-color: #83748c;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 60px 30px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+    border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
+  }
+  .share-highscore-global-button:hover {
+    background-color: #392a48;
+  }
+
+  .unshare-highscore-global-button {
+    padding: 15px 32px;
+    border: none;
+    background-color: #83748c;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 100px 30px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+    border-radius: 5px;
+    box-shadow: 0px 3px 6px #000;
+  }
+  .unshare-highscore-global-button:hover {
+    background-color: #392a48;
+  }
+  
   .leaderboard-button {
     background-color: transparent;
     border: none;
@@ -342,7 +464,7 @@ body {
     justify-content: center;
     align-items: center;
     color:#443646;
-    z-index: 1000;
+    z-index: 1001;
   }
   
   .leaderboard-popup-content {
@@ -373,11 +495,13 @@ body {
 .leaderboard {
     width: 300px;
     background-color: #fefefe;
-    margin: 0 auto;
+    color: black;
+    margin: 0 auto 30px;
     padding: 20px;
     text-align: center;
     border-radius: 10px;
     box-shadow: 0px 4px 6px #aaa;
+    z-index: 1002;
   }
   
   .player {
@@ -410,18 +534,20 @@ body {
     border-radius: 10px;
     justify-content: flex-start;
     padding: 10px;
+    margin-bottom: 40px;
   }
   
   .tab-button {
     margin-right: 10px;
     padding: 5px 10px;
     border: none;
-    background-color: #ddd;
+    background-color: #aaa;
+    color: white;
     cursor: pointer;
   }
   
   .tab-button.active {
-    background-color: #aaa;
+    background-color: #83748c;
     color: white;
   }
 
