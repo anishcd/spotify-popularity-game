@@ -8,7 +8,7 @@ The game references Spotify's internal popularity index, which is a value assign
 
 Test your knowledge of popular songs and see how high you can score!
 
-This project uses the React.js framework as well as the public Spotify API to fetch relevant personalized tracklist, and song data provided by Spotify.
+This project uses the React.js framework for the frontend and Node.js backend functionality as well as the public Spotify API to fetch relevant personalized tracklist, and song data provided by Spotify.
 
 OAuth2 authentication with Flask allows users to log in using their Spotify credentials and accesses their personal streaming information
 
