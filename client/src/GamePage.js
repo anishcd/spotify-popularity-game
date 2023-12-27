@@ -1,11 +1,7 @@
-// Note: Add the code that you have previously written for the game inside this component
 import './GamePage.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaCircleInfo, FaTrophy } from 'react-icons/fa6';
-import $ from 'jquery'; 
-import { wait } from '@testing-library/user-event/dist/utils';
-import { countryCode } from 'emoji-flags';
 import _ from 'lodash';
 
 const GamePage = ({ token, onLogout }) => {
