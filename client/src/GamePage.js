@@ -6,6 +6,7 @@ import { FaCircleInfo, FaTrophy } from 'react-icons/fa6';
 import $ from 'jquery'; 
 import { wait } from '@testing-library/user-event/dist/utils';
 import { countryCode } from 'emoji-flags';
+import _ from 'lodash';
 
 const GamePage = ({ token, onLogout }) => {
     const [userId, setUserId] = useState(null);
@@ -26,14 +27,27 @@ const GamePage = ({ token, onLogout }) => {
     const [activeTab, setActiveTab] = useState('personal');
     const [gamesPlayed, setGamesPlayed] = useState(null);
     const [country, setCountry] = useState(null);
-    const [globalScope, setGlobalScope] = useState(false);
+    const [globalScope, setGlobalScope] = useState(true);
     const [profilePic, setProfilePic] = useState(null);
     const [displayName, setDisplayName] = useState(null);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isFadingIn, setIsFadingIn] = useState(false);
+    const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
 
 
+    useEffect(() => {
+        fetchGlobalLeaderboard();
+    }, []);
 
+    const fetchGlobalLeaderboard = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/topHighscoresGlobal")
+            console.log(response.data);
+            setGlobalLeaderboard(response.data)
+        } catch (error) {
+            console.error("Error fetching global leaderboard:", error);
+        }
+    };
 
     const pickRandomSongs = () => {
         const randomSongs = topTracks.sort(() => 0.5 - Math.random()).slice(0, 1);
@@ -93,12 +107,21 @@ const GamePage = ({ token, onLogout }) => {
                         // Call getHighscore only if the username exists
                         getHighscore(userId);
                     } else {
+                        // Assuming you have profilePic and country variables available
+                        // You need to fetch or define these values based on your application's logic
+                        const proPic = profilePic;
+                        const countryInit = country;
+    
                         fetch("http://localhost:3001/createUser", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
                             },
-                            body: JSON.stringify({ username: userId })
+                            body: JSON.stringify({ 
+                                username: userId,
+                                profilePic: proPic,
+                                country: countryInit
+                            })
                         })
                         .then(response => response.json()) // Assuming server responds with json
                         .then(data => {
@@ -119,6 +142,7 @@ const GamePage = ({ token, onLogout }) => {
                 });
         }
     }, [userId]);
+    
 
     const getUser = async() => {
         if (token) {
@@ -142,50 +166,47 @@ const GamePage = ({ token, onLogout }) => {
         setChoice(choice);
         setChoiceMade(true);
         setCurrentCount(0);
-      
+    
         await countUp(song2.popularity);
-      
-        setTimeout(() => {
-          if (song1.popularity === song2.popularity || (choice === "higher" && song2.popularity > song1.popularity) || (choice === "lower" && song2.popularity < song1.popularity)) {
-            // Correct guess
-            setScore(score + 1);
-            if ((score + 1) > highScore && userId) {
-              updateHighscore(userId, score + 1).then(() => {
-                getHighscore(userId);
-              });
-              setIsNewHighScore(true);
+    
+        setTimeout(async () => {
+            if (song1.popularity === song2.popularity || (choice === "higher" && song2.popularity > song1.popularity) || (choice === "lower" && song2.popularity < song1.popularity)) {
+                setScore(score + 1);
+                if ((score + 1) > highScore && userId) {
+                    await updateHighscore(userId, score + 1);
+                    setIsNewHighScore(true);
+                    await fetchGlobalLeaderboard();  // Refresh the leaderboard
+                }
+                setShowCheckmark(true);
+                setShowCrossmark(false);
+    
+                setTimeout(() => {
+                    setIsAnimating(true);
+                    setShowCheckmark(false);
+                    setShowCrossmark(false);
+    
+                    setTimeout(() => {
+                        setIsAnimating(false);
+                        pickRandomSongs();
+                        setChoiceMade(false);
+                        setChoice(null);
+                    }, 2000);
+                }, 2000);
+            } else {
+                setShowCheckmark(false);
+                setShowCrossmark(true);
+    
+                setTimeout(async () => {
+                    if ((score + 1) > highScore && userId) {
+                        await fetchGlobalLeaderboard();  // Refresh the leaderboard
+                    }
+                    setShowLossPopup(true);
+                    setShowCrossmark(false);
+                }, 2000);
             }
-            setShowCheckmark(true);
-            setShowCrossmark(false);
-      
-            // Start Slide Animation after 1 second
-            setTimeout(() => {
-              setIsAnimating(true);
-      
-              setShowCheckmark(false);
-              setShowCrossmark(false);
-      
-              // End Slide Animation and proceed to the next card after another second
-              setTimeout(() => {
-                setIsAnimating(false);
-                pickRandomSongs();
-                setChoiceMade(false);
-                setChoice(null);
-              }, 2000);  // Time taken for slide animation, can be adjusted
-            }, 2000);  // Time taken for checkmark/crossmark animation
-      
-          } else {
-            setShowCheckmark(false);
-            setShowCrossmark(true);
-      
-            // Show the popup after crossmark animation
-            setTimeout(() => {
-              setShowLossPopup(true);
-              setShowCrossmark(false);  // Hide the crossmark
-            }, 2000);  // 2 seconds for crossmark animation
-          }
-        }, 1000);  // 1 second for counting up the popularity
-      };
+        }, 1000);
+    };
+    
       
 
       const handlePlayAgain = () => {
@@ -217,9 +238,30 @@ const GamePage = ({ token, onLogout }) => {
         setShowLeaderboard(!showLeaderboard);
     }
 
-    const toggleShareGlobal = () => {
-        setGlobalScope(!globalScope);
+    async function toggleShareGlobal() {
+        console.log('toggleShareGlobal called');
+    
+        const updatedGlobalScope = !globalScope;
+        setGlobalScope(updatedGlobalScope);
+    
+        // Determine the endpoint based on the updated global scope
+        const endpoint = `http://localhost:3001/changeGlobal/${userId}`;
+    
+        // Toggle the global flag for the user
+        axios.post(endpoint)
+            .then(response => {
+                console.log(`Global scope ${updatedGlobalScope ? 'enabled' : 'disabled'} for user:`, response.data);
+                // Refresh the global leaderboard after updating the global scope
+                fetchGlobalLeaderboard();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
+    
+    
+    
+    
 
     const logout = () => {
         onLogout();
@@ -253,7 +295,6 @@ const GamePage = ({ token, onLogout }) => {
             console.log(response);
             setHighScore(response.data.highscore); // assuming setHighScore is the setter of a state variable
             setGamesPlayed(response.data.gamesPlayed);
-            setGlobalScope(response.data.global);
           } catch (error) {
             console.error(`Failed to fetch high score: ${error}`);
           }
@@ -274,6 +315,34 @@ const GamePage = ({ token, onLogout }) => {
               }
             }, int_speed);
           });
+    };
+
+
+    const Leaderboard = ({ data }) => {
+        return (
+            <div className="leaderboard">
+                {data.map((entry, index) => (
+                    <div key={index} className="player">
+                        <img src={entry.profilePic || 'default-profile.jpg'} alt={entry.username} className="profile-pic"/>
+                        <span className="player-country">{getFlagEmoji(entry.country)}</span>
+                        <span className="player-name">{entry.username}</span>
+                        <span className="player-score">{entry.highscore}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const UserInfo = ({ profilePic, displayName, highScore, gamesPlayed, country }) => {
+        return (
+            <div className="user-info">
+                <img src={profilePic} alt="Profile" className="self-profile-pic" />
+                <span className="country-flag">{getFlagEmoji(country)}</span>
+                <h1 className="display-name">{displayName}</h1>
+                <h2>Highscore: <span className="highscore">{highScore}</span></h2>
+                <h2>Games Played: <span className="games-played">{gamesPlayed}</span></h2>
+            </div>
+        );
     };
 
     function getFlagEmoji(countryCode) {
@@ -378,7 +447,7 @@ const GamePage = ({ token, onLogout }) => {
             <div className="info-window">
             <div className="info-popup-content">
                 <b><ins>How do I play?</ins></b>
-                <p>Guess which song is higher or lower in popularity from your personal favorite songs and tracks from Spotify!</p>
+                <p>Guess which song is higher or lower in popularity from your personal catalog of favorite songs and tracks from Spotify!</p>
                 <b><ins>What does the number below the song mean?</ins></b>
                 <p>The game references Spotify's internal popularity index, which is a value assigned to each track between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the <b>total number of plays</b> the track has had and how <b>recent</b> those plays are.</p>
                 <button className="info-close-button" onClick={toggleInstructions}>
@@ -406,51 +475,36 @@ const GamePage = ({ token, onLogout }) => {
             </div>
 
             {activeTab === 'global' ? (
-                <div id="globalLeaderboard">
-                <h2>Leaderboard</h2>
-                <div className="leaderboard">
-                    <div className="player">
-                    <img src="profile1.jpg" alt="Player 1" className="profile-pic"/>
-                    <span className="player-name">Player 1</span>
-                    <span className="player-score">100</span>
-                    </div>
-                    <div className="player">
-                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                    <span className="player-name">Player 2</span>
-                    <span className="player-score">90</span>
-                    </div>
-                    <div className="player">
-                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                    <span className="player-name">Player 2</span>
-                    <span className="player-score">90</span>
-                    </div>
-                    <div className="player">
-                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                    <span className="player-name">Player 2</span>
-                    <span className="player-score">90</span>
-                    </div>
-                    <div className="player">
-                    <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                    <span className="player-name">Player 2</span>
-                    <span className="player-score">90</span>
-                    </div>
+                <div id="globalLeaderboard" className="global-popup">
+                <h2>Global Leaderboard</h2>
+                <Leaderboard data={globalLeaderboard} />
+                {globalScope ? (
+                            <button className="unshare-highscore-global-button" onClick={toggleShareGlobal}>
+                                Unshare My High Score
+                            </button>
+                        ) : (
+                            <button className="share-highscore-global-button" onClick={toggleShareGlobal}>
+                                Share My High Score
+                            </button>
+                        )}
+
+                        <h3>Your High Score is {globalScope ? "Public" : "Private"}</h3>
                 </div>
-            </div>
             ) : (
                 <>
                     {isNewHighScore ? (
                         <>
                             <h2>New High Score!</h2>
                             <div className="loss-count">{score}</div>
-                            {!globalScope ? (
-                            <button className="share-highscore-global-button" onClick={toggleShareGlobal}>
-                                Share your highscore to our global leaderboard?
-                            </button>
+                            {globalScope ? (
+                            <button className="share-highscore-global-button" onClick={(e) => { e.stopPropagation(); toggleShareGlobal(); }}>
+                            Unshare My High Score
+                        </button>
                             ) : (
                             <>
-                                <h2>Highscore Shared!</h2>
+                                <h2>High Score Unshared</h2>
                                 <button className="unshare-highscore-global-button" onClick={toggleShareGlobal}>
-                                Unshare
+                                Share My High Score
                                 </button>
                             </>
                             )}
@@ -478,62 +532,49 @@ const GamePage = ({ token, onLogout }) => {
                     className={`tab-button ${activeTab === 'personal' ? 'active' : ''}`}
                     onClick={() => switchLeaderboard('personal')}
                     >
-                    My Highscores
+                    My Info
                     </button>
                     <button
                     className={`tab-button ${activeTab === 'global' ? 'active' : ''}`}
                     onClick={() => switchLeaderboard('global')}
                     >
-                    Global
+                    Leaderboard
                     </button>
                 </div>
 
                 {activeTab === 'global' ? (
-                    <div id="globalLeaderboard">
-                        <h2>Leaderboard</h2>
-                        <div className="leaderboard">
-                            <div className="player">
-                            <img src="profile1.jpg" alt="Player 1" className="profile-pic"/>
-                            <span className="player-name">Player 1</span>
-                            <span className="player-score">100</span>
-                            </div>
-                            <div className="player">
-                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                            <span className="player-name">Player 2</span>
-                            <span className="player-score">90</span>
-                            </div>
-                            <div className="player">
-                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                            <span className="player-name">Player 2</span>
-                            <span className="player-score">90</span>
-                            </div>
-                            <div className="player">
-                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                            <span className="player-name">Player 2</span>
-                            <span className="player-score">90</span>
-                            </div>
-                            <div className="player">
-                            <img src="profile2.jpg" alt="Player 2" className="profile-pic"/>
-                            <span className="player-name">Player 2</span>
-                            <span className="player-score">90</span>
-                            </div>
-                        </div>
+                    <div id="globalLeaderboard" className="global-popup">
+                        <h2>Global Leaderboard</h2>
+                        <Leaderboard data={globalLeaderboard} />
+
+                        {globalScope ? (
+                            <button className="unshare-highscore-global-button" onClick={toggleShareGlobal}>
+                                Unshare My High Score
+                            </button>
+                        ) : (
+                            <button className="share-highscore-global-button" onClick={toggleShareGlobal}>
+                                Share My High Score
+                            </button>
+                        )}
+
+                        <h3>Your High Score is {globalScope ? "Public" : "Private"}</h3>
                     </div>
-                    ) : (
-                        <div id="myHighscores" className="highscores-container">
-                        <div className="user-info">
-                            <img src={profilePic} alt="Profile" className="self-profile-pic" />
-                            <span className="country-flag">{/* flag emoji or icon will go here */}</span>
-                        </div>
-                        <h1>{displayName}</h1>
-                        <h2>Your Highscore: <span className="highscore">{highScore}</span></h2>
-                        <h2>Games Played: <span className="games-played">{gamesPlayed}</span></h2>
+                ) : (
+                    <div id="myHighscores" className="highscores-container">
+                        <UserInfo 
+                            profilePic={profilePic} 
+                            displayName={displayName} 
+                            highScore={highScore} 
+                            gamesPlayed={gamesPlayed} 
+                            country={country} 
+                        />
                     </div>
                 )}
-                  <button className="leaderboard-close-button" onClick={toggleLeaderboard}>Close</button>
+                <button className="leaderboard-close-button" onClick={toggleLeaderboard}>Close</button>
                 </div>
-              </div>
-            )}
+                </div>
+                )}
+
         </div>
       );
     };

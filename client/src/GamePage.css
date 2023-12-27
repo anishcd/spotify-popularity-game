@@ -468,7 +468,7 @@ body {
   }
   
   .leaderboard-popup-content {
-    background-color: #fff;
+    background: linear-gradient(to right, #5d3e61, #4c3e62);
     padding: 20px;
     border-radius: 10px;
   }
@@ -503,12 +503,17 @@ body {
     box-shadow: 0px 4px 6px #aaa;
     z-index: 1002;
   }
+
+  .global-popup {
+    text-align: center;
+    color: white;
+  }
   
   .player {
     display: flex;
     align-items: center;
-    margin: 10px 0;
-    padding: 5px;
+    margin: 10px 0px;
+    padding: 10px;
     background-color: #f1f1f1;
     border-radius: 5px;
   }
@@ -553,8 +558,8 @@ body {
 
   .self-profile-pic {
     border-radius: 50%; /* this makes the image circular */
-    width: 75px; /* you can change this as needed */
-    height: 75px; /* you can change this as needed */
+    width: 90px; /* you can change this as needed */
+    height: 90px; /* you can change this as needed */
     object-fit: cover; /* keep the aspect ratio of the image */
     box-shadow: 0px 3px 6px #000;
   }
@@ -562,7 +567,10 @@ body {
   .highscores-container {
     background-color: #f5f5f5;
     border-radius: 10px;
-    padding: 75px;
+    padding-left: 75px;
+    padding-right: 75px;
+    padding-top: 40px;
+    padding-bottom: 40px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
@@ -577,11 +585,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
 .country-flag {
-    margin-left: 10px;
-    font-size: 24px;
+    margin-top: 15px;
+    font-size: 30px;
+}
+
+.display-name {
+    margin-top: 5px; /* Negative margin to pull closer to the flag */
 }
 
 .highscore, .games-played {

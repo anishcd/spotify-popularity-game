@@ -3,49 +3,96 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
+
 const corsOptions = {
     origin: 'http://localhost:3000',  // replace with your frontend application's URL
     optionsSuccessStatus: 204
-  };
-  
-  app.use(cors(corsOptions)); // Enables CORS for all routes
+};
+
+app.use(cors(corsOptions)); // Enables CORS for all routes
 app.use(express.json()); // For parsing application/json
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/highscores", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 
-// Define Schema and Model
+// Updated User Schema
 const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  highscore: {
-    type: Number,
-    default: 0,
-    required: true
-  },
-  global: {
-    type: Boolean,
-    default: false,
-    required: true
-  },
-  dateAchieved: {
-    type: Date,
-    default: Date.now(),
-    required: true
-  },
-  gamesPlayed: {
-    type: Number,
-    default: 0,
-    required: true
-  }
+    username: {
+        type: String,
+        required: true
+    },
+    highscore: {
+        type: Number,
+        default: 0,
+        required: true
+    },
+    global: {
+        type: Boolean,
+        default: true,
+        required: true
+    },
+    dateAchieved: {
+        type: Date,
+        default: Date.now(),
+        required: true
+    },
+    gamesPlayed: {
+        type: Number,
+        default: 0,
+        required: true
+    },
+    profilePic: {
+        type: String,
+        default: '' // You can set a default image URL or keep it empty
+    },
+    country: {
+        type: String,
+        default: ''
+    }
 });
 
 const User = mongoose.model("User", UserSchema);
+
+// API Endpoint to get the top 5 high scores from the global leaderboard
+app.get("/topHighscoresGlobal", async (req, res) => {
+    try {
+        // Find all users with global flag set to true, sort them in descending order by highscore,
+        // and limit the result to the top 5 entries
+        const topGlobalHighScores = await User.find({ global: true })
+            .sort({ highscore: -1 }) // -1 for descending order
+            .limit(5);
+        
+        res.status(200).json(topGlobalHighScores);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred.');
+    }
+});
+
+
+app.post('/changeGlobal/:username', async (req, res) => {
+    const { username } = req.params;
+    
+    try {
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).send('User not found.');
+        }
+
+        // Toggle the global flag
+        user.global = !user.global;
+        await user.save();
+
+        res.status(200).send({ global: user.global });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred.');
+    }
+});
 
 // API Endpoints
 // API Endpoint to save a new high score only if it's higher than the existing one
@@ -91,14 +138,22 @@ app.get("/getUserByUsername/:username", async (req, res) => {
 
 // API Endpoint to add a new user with an initial high score of 0
 app.post("/createUser", async (req, res) => {
-    const { username } = req.body;
+    const { username, profilePic, country } = req.body; // Destructuring to get profilePic and country
     const existingUser = await User.findOne({ username });
   
     if (existingUser) {
       return res.status(400).send("Username already exists.");
     }
-  
-    const user = new User({ username, highscore: 0, dateAchieved: Date.now(), gamesPlayed: 0});
+
+    // Creating a new user with the profilePic and country if provided
+    const user = new User({ 
+        username, 
+        highscore: 0, 
+        dateAchieved: Date.now(), 
+        gamesPlayed: 0,
+        profilePic: profilePic || '', // Use an empty string if profilePic is not provided
+        country: country || '' // Use an empty string if country is not provided
+    });
     await user.save();
     res.status(200).send(user);
 });
